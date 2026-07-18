@@ -2193,11 +2193,7 @@ export default function App() {
                       <span className="text-[10px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-500/20 font-mono flex items-center gap-1">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Внешний ИИ
                       </span>
-                    ) : (
-                      <span className="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded border border-slate-700 font-mono" title={recommendationError || 'Туннель выключен'}>
-                        Локальный ИИ
-                      </span>
-                    )}
+                    ) : null}
                     <button
                       onClick={fetchRecommendations}
                       disabled={isFetchingRecommendations}
@@ -2208,16 +2204,6 @@ export default function App() {
                     </button>
                   </div>
                 </div>
-
-                {recommendationError && (
-                  <div className="p-1.5 rounded bg-amber-500/[0.03] border border-amber-500/15 text-[10px] text-amber-300/90 flex items-start gap-1.5">
-                    <Info className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
-                    <div>
-                      <span className="font-semibold block text-[10.5px]">Внешний туннель Cloudflare оффлайн</span>
-                      Пожалуйста, запустите `cloudflared` туннель на вашем сервере. Задействован локальный алгоритм расчета.
-                    </div>
-                  </div>
-                )}
 
                 <div className="space-y-2">
                   {/* If we have external recommendations, show them */}
