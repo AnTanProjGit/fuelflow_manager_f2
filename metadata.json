@@ -1,0 +1,8 @@
+{
+  "name": "fuelflow_manager_f2",
+  "description": "An intelligent platform designed to aggregate fuel availability, parse Telegram chats with Gemini, predict station wait times, and direct consumer flows in fuel deficits.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
