@@ -1,0 +1,93 @@
+version: "3.9"
+
+services:
+  # 💻 React/Vite + Express Frontend
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: react_frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - BACKEND_API_URL=http://fastapi_app:8000/recommendation
+    depends_on:
+      - app
+      - db
+      - redis
+
+  # 🐍 Python FastAPI REST API Backend
+  app:
+    build: .
+    container_name: fastapi_app
+    restart: always
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://user:pass@postgres:5432/app
+      - POSTGRES_SERVER=postgres
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_DB=app
+      - POSTGRES_PORT=5432
+      - REDIS_URL=redis://redis:6379/0
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+    depends_on:
+      - db
+      - redis
+
+  # ⚙️ Celery Background Tasks Worker
+  worker:
+    build: .
+    container_name: celery_worker
+    restart: always
+    command: celery -A app.workers.celery_worker worker --loglevel=info
+    volumes:
+      - .:/app
+    environment:
+      - DATABASE_URL=postgresql://user:pass@postgres:5432/app
+      - POSTGRES_SERVER=postgres
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_DB=app
+      - POSTGRES_PORT=5432
+      - REDIS_URL=redis://redis:6379/0
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+    depends_on:
+      - redis
+      - db
+
+  # 🐘 PostgreSQL Database
+  db:
+    image: postgres:15
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: app
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # 🟥 Redis Broker & Cache
+  redis:
+    image: redis:7
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:

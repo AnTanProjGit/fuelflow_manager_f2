@@ -375,7 +375,7 @@ Verify against anti-fake RAG guidelines:
   llmApiKey: 'AIzaSyF_example_key_value_here',
   proxyType: 'direct',
   proxyAddress: 'https://proxy.fuel-gateway.local:8080',
-  recommendationApiUrl: 'http://localhost:8000/recommendation',
+  recommendationApiUrl: process.env.BACKEND_API_URL || 'http://localhost:8000/recommendation',
 };
 
 let supplyEvents: SupplyEvent[] = [
@@ -562,7 +562,7 @@ app.post('/api/settings', (req, res) => {
 
 // Proxy endpoint to query external TryCloudflare recommendation backend
 app.get('/api/recommendations', async (req, res) => {
-  const targetUrl = settings.recommendationApiUrl || 'http://localhost:8000/recommendation';
+  const targetUrl = settings.recommendationApiUrl || process.env.BACKEND_API_URL || 'http://localhost:8000/recommendation';
   
   addLog('info', 'Рекомендации', `Запрос к внешнему бекенду: ${targetUrl}`);
   

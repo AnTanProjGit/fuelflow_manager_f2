@@ -1,0 +1,45 @@
+# ==============================================================================
+# Multi-stage Dockerfile for React/Vite/Express Frontend
+# ==============================================================================
+
+# --- Stage 1: Build ---
+FROM node:20-slim AS builder
+
+WORKDIR /app
+
+# Copy dependency configuration files
+COPY package.json package-lock.json* bun.lock* ./
+
+# Install all dependencies (including devDependencies needed for build)
+RUN npm install
+
+# Copy application source code
+COPY . .
+
+# Build the frontend assets and compile server.ts to dist/server.cjs
+RUN npm run build
+
+# --- Stage 2: Production Run ---
+FROM node:20-slim AS runner
+
+WORKDIR /app
+
+ENV NODE_ENV=production \
+    PORT=3000
+
+# Copy package.json to manage production dependencies
+COPY package.json package-lock.json* bun.lock* ./
+
+# Install only production dependencies
+RUN npm install --only=production
+
+# Copy built artifacts from the builder stage
+COPY --from=builder /app/dist ./dist
+# Copy config or resource files if they are read at runtime by the server
+COPY --from=builder /app/chat_channels.json* ./
+
+# Expose the frontend reverse proxy / Express port
+EXPOSE 3000
+
+# Command to run the production build
+CMD ["npm", "run", "start"]
