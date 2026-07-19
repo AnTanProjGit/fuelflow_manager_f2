@@ -52,7 +52,7 @@ import { GasStation, ChatMessage, SystemSettings, SupplyEvent, ChatChannel, Subs
 
 export default function App() {
   // Navigation Tabs
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'simulator' | 'admin' | 'logs' | 'architecture' | 'backend' | 'auth'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'simulator' | 'admin' | 'logs' | 'architecture' | 'auth'>('dashboard');
   const [isAdminDropdownOpen, setIsAdminDropdownOpen] = useState(false);
 
   // User Auth States
@@ -112,8 +112,6 @@ export default function App() {
   const [isListening, setIsListening] = useState(false);
   const [botUser, setBotUser] = useState('Тимофей П.');
   const [botSelectedStation, setBotSelectedStation] = useState('');
-  const [backendCode, setBackendCode] = useState<Record<string, string>>({});
-  const [activeCodeTab, setActiveCodeTab] = useState<string>('main');
   const [copyStatus, setCopyStatus] = useState<string>('');
   const [feedbackSuccess, setFeedbackSuccess] = useState<string | null>(null);
   const [showLlmApiKey, setShowLlmApiKey] = useState<boolean>(false);
@@ -577,20 +575,8 @@ export default function App() {
     }
   };
 
-  const fetchBackendCode = async () => {
-    try {
-      const res = await fetch('/api/backend/code');
-      if (res.ok && res.headers.get('content-type')?.includes('application/json')) {
-        setBackendCode(await res.json());
-      }
-    } catch (err: any) {
-      console.warn('Backend code loading info (offline/restart):', err?.message || err);
-    }
-  };
-
   useEffect(() => {
     fetchData();
-    fetchBackendCode();
     fetchRecommendations();
   }, []);
 
@@ -1331,7 +1317,7 @@ export default function App() {
               <button
                 onClick={() => setIsAdminDropdownOpen(!isAdminDropdownOpen)}
                 className={`p-2 rounded-lg text-xs font-medium transition flex items-center gap-1 border border-transparent ${
-                  ['simulator', 'admin', 'logs', 'architecture', 'backend'].includes(activeTab)
+                  ['simulator', 'admin', 'logs', 'architecture'].includes(activeTab)
                     ? 'bg-emerald-600 text-white shadow-lg'
                     : 'text-slate-400 hover:text-white hover:bg-slate-900/50'
                 }`}
@@ -1394,18 +1380,6 @@ export default function App() {
                       }`}
                     >
                       <Layers className="w-3.5 h-3.5 text-amber-400" /> ER-Схема
-                    </button>
-                    
-                    <button
-                      onClick={() => {
-                        setActiveTab('backend');
-                        setIsAdminDropdownOpen(false);
-                      }}
-                      className={`w-full text-left px-4 py-2.5 text-xs font-medium transition flex items-center gap-2.5 ${
-                        activeTab === 'backend' ? 'bg-emerald-600/20 text-emerald-400 border-l-2 border-emerald-500 pl-3.5' : 'text-slate-300 hover:bg-slate-800 hover:text-white pl-4'
-                      }`}
-                    >
-                      <Code className="w-3.5 h-3.5 text-violet-400" /> Код FastAPI
                     </button>
                   </div>
                 </>
@@ -5106,94 +5080,7 @@ async def run_scraper():
           </div>
         )}
 
-        {/* --- 💻 TAB 5: DEVELOPER BACKEND CODE EXPORT --- */}
-        {activeTab === 'backend' && (
-          <div className="space-y-3.5">
-            
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-3.5">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-slate-800 mb-3.5">
-                <div>
-                  <h2 className="text-lg font-bold font-display text-white flex items-center gap-2">
-                    <Code className="w-5 h-5 text-emerald-400" /> Генератор Готового Бэкенда (Python FastAPI + PostgreSQL + Docker)
-                  </h2>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Полноценная модульная кодовая база для быстрого развертывания продакшн-системы.
-                  </p>
-                </div>
-                
-                <div className="text-xs bg-slate-950 p-1.5 rounded-lg border border-slate-800 inline-flex">
-                  <span className="text-emerald-400 font-bold px-2 py-1">MVP → Scalable</span>
-                </div>
-              </div>
 
-              {/* Code viewer split */}
-              <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-                
-                {/* Left col: File Selector */}
-                <div className="space-y-2 lg:col-span-1">
-                  <span className="text-xs text-slate-400 font-semibold block uppercase tracking-wider mb-2">Файлы проекта бэкенда:</span>
-                  {[
-                    { id: 'main', label: 'main.py', type: 'FastAPI Router' },
-                    { id: 'database', label: 'database.py', type: 'SQLAlchemy ORM' },
-                    { id: 'parser', label: 'parser.py', type: 'NLP Parser' },
-                    { id: 'dockerfile', label: 'Dockerfile', type: 'Container Build' },
-                    { id: 'dockercompose', label: 'docker-compose.yml', type: 'Stack Config' },
-                    { id: 'requirements', label: 'requirements.txt', type: 'Python Deps' }
-                  ].map(file => (
-                    <button
-                      key={file.id}
-                      onClick={() => setActiveCodeTab(file.id)}
-                      className={`w-full text-left p-2 rounded-lg text-xs font-mono transition flex justify-between items-center ${
-                        activeCodeTab === file.id
-                          ? 'bg-emerald-600/10 text-emerald-400 border border-emerald-500/30 font-semibold'
-                          : 'bg-slate-950/40 hover:bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'
-                      }`}
-                    >
-                      <span>📁 {file.label}</span>
-                      <span className="text-[9px] opacity-70 bg-slate-900 px-1.5 py-0.5 rounded uppercase">{file.type}</span>
-                    </button>
-                  ))}
-
-                  <div className="pt-3 border-t border-slate-800">
-                    <div className="p-2.5 rounded-lg bg-emerald-500/5 border border-emerald-500/10 text-[11px] text-slate-300 leading-relaxed">
-                      💡 <strong>Инструкция:</strong> Скопируйте эти файлы в локальную директорию на вашем ПК, запустите команду <code className="bg-slate-950 text-amber-300 px-1 rounded font-mono">docker-compose up --build</code> и вы получите полностью рабочий боевой REST API бэкенд на Python!
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right col: Editor viewport */}
-                <div className="lg:col-span-3 space-y-2">
-                  <div className="flex justify-between items-center bg-slate-950 px-4 py-1.5 rounded-t-lg border-t border-x border-slate-800 text-xs font-mono text-slate-400">
-                    <span>Active: {activeCodeTab}.py</span>
-                    <button
-                      onClick={() => handleCopyCode(activeCodeTab, backendCode[activeCodeTab] || '')}
-                      className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded border border-slate-700 transition flex items-center gap-1"
-                    >
-                      {copyStatus === activeCodeTab ? (
-                        <>
-                          <Check className="w-3.5 h-3.5 text-emerald-400" /> Скопировано!
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-3.5 h-3.5" /> Копировать код
-                        </>
-                      )}
-                    </button>
-                  </div>
-
-                  <div className="bg-slate-950 rounded-b-lg border-b border-x border-slate-800 p-3 max-h-[350px] overflow-y-auto">
-                    <pre className="font-mono text-xs text-slate-200 leading-relaxed whitespace-pre-wrap">
-                      {backendCode[activeCodeTab] || 'Загрузка кода...'}
-                    </pre>
-                  </div>
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
-        )}
 
         {/* --- 🔐 TAB 6: USER AUTHORIZATION & PROFILE --- */}
         {activeTab === 'auth' && (
